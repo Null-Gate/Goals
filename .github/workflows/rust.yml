@@ -16,9 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Go to Rust Folder
-      run: cd goals_backend
     - name: Run Check
-      run: cargo check
+      run: cd goals_backend && cargo check
     - name: Run Build
-      run: cargo build --verbose
+      run: cd goals_backend && cargo build --verbose
