@@ -1,3 +1,4 @@
+use jsonwebtoken;
 use actix_web::{HttpServer, App, get, HttpResponse, Scope, web::{self, Json}};
 use surrealdb::{Surreal, engine::local::{File, Db}};
 use async_once::AsyncOnce;
@@ -27,5 +28,6 @@ fn scope() -> Scope {
 
 #[get("/login")]
 async fn login(info: Json<LoginInfo>) -> HttpResponse {
+    let db = DB.get().await;
     todo!()
 }
