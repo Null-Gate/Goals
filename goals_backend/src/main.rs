@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use jsonwebtoken;
 use actix_web::{HttpServer, App, get, HttpResponse, Scope, web::{self, Json}};
 use surrealdb::{Surreal, engine::local::{File, Db}};
@@ -28,6 +30,7 @@ struct LoginInfo {
     password: String,
 }
 
+#[derive(Serialize, Deserialize)]
 struct SignUpInfo {
     username: String,
     fullname: String,
@@ -35,9 +38,13 @@ struct SignUpInfo {
     upfp_pic: Option<Vec<u8>>
 }
 
+#[derive(Serialize, Deserialize)]
 enum Time {
+    TimeStamp (usize),
+    Other (String),
 }
 
+#[derive(Serialize, Deserialize)]
 enum Date {
     Sunday,
     Monday,
@@ -48,16 +55,19 @@ enum Date {
     Saturday,
 }
 
+#[derive(Serialize, Deserialize)]
 struct Post {
     title: String,
     details: String,
+    tables: HashMap<Date, HashMap<Time, String>>,
 }
 
+#[derive(Serialize, Deserialize)]
 struct UserInfo {
     username: String,
     fullname: String,
     password: String,
-    up_posts: Vec<>,
+    up_posts: Vec<Post>,
     pic_path: String,
 }
 
