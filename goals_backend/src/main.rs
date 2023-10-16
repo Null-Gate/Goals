@@ -12,9 +12,53 @@ lazy_static! {
 }
 
 #[derive(Serialize, Deserialize)]
+struct Resp {
+    msg: String,
+}
+
+impl Resp {
+    fn new(msg: &str) -> Resp {
+        Resp { msg: msg.into() }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 struct LoginInfo {
     username: String,
+    password: String,
+}
+
+struct SignUpInfo {
+    username: String,
     fullname: String,
+    password: String,
+    upfp_pic: Option<Vec<u8>>
+}
+
+enum Time {
+}
+
+enum Date {
+    Sunday,
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+}
+
+struct Post {
+    title: String,
+    details: String,
+}
+
+struct UserInfo {
+    username: String,
+    fullname: String,
+    password: String,
+    up_posts: Vec<>,
+    pic_path: String,
 }
 
 #[actix_web::main]
@@ -29,5 +73,13 @@ fn scope() -> Scope {
 #[get("/login")]
 async fn login(info: Json<LoginInfo>) -> HttpResponse {
     let db = DB.get().await;
+    match db.select(("user", info.username)).await {
+        Ok(user) => {},
+        Err(_) => {
+            HttpResponse::InternalServerError().json(Resp::new("Sorry We are some problem in opening database!!"))
+        }
+    }
+    
+
     todo!()
 }
