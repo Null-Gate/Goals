@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use jsonwebtoken;
 use actix_web::{HttpServer, App, get, HttpResponse, Scope, web::{self, Json}};
-use surrealdb::{Surreal, engine::local::{File, Db}};
+use surrealdb::{Surreal, engine::local::{File, Db}, opt::QueryResult};
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use serde::{Serialize, Deserialize};
@@ -38,13 +38,13 @@ struct SignUpInfo {
     upfp_pic: Option<Vec<u8>>
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq)]
 enum Time {
     TimeStamp (usize),
     Other (String),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq)]
 enum Date {
     Sunday,
     Monday,
@@ -83,13 +83,15 @@ fn scope() -> Scope {
 #[get("/login")]
 async fn login(info: Json<LoginInfo>) -> HttpResponse {
     let db = DB.get().await;
-    match db.select(("user", info.username)).await {
-        Ok(user) => {},
+    let sql = r#"SELECT username, fullname, password "#;
+    match db.query(sql).await {
+        Ok(mut user_check) => {
+            if let Ok(Some(user)) = user_check.take::<Option<String>>("password") {
+            }
+            HttpResponse::NotFound().json(Resp::new(&format!("Sorry No User is founded with username of: {}", info.username)))
+        },
         Err(_) => {
             HttpResponse::InternalServerError().json(Resp::new("Sorry We are some problem in opening database!!"))
         }
     }
-    
-
-    todo!()
 }
