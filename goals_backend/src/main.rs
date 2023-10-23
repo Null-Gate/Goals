@@ -6,6 +6,7 @@ mod structures;
 mod scopes;
 mod login;
 mod signup;
+mod gen_salt;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
