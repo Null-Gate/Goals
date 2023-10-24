@@ -2,3 +2,4 @@
 /Cargo.lock
 /db.db
 src/secrets.rs
+/.env

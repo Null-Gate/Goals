@@ -3,7 +3,7 @@ use argon2::verify_encoded;
 use chrono::{Utc, Duration};
 use jsonwebtoken::{encode, Header, EncodingKey};
 
-use crate::{structures::*, secrets::JWT_SECRETS};
+use crate::{structures::*, get_jwt_secret};
 
 #[get("/login")]
 pub async fn login(info: Json<LoginInfo>) -> HttpResponse {
@@ -23,7 +23,7 @@ pub async fn login(info: Json<LoginInfo>) -> HttpResponse {
                                 password: info.password.clone(),
                                 exp
                             };
-                            match encode(&Header::default(), &claims, &EncodingKey::from_secret(JWT_SECRETS.as_bytes())) {
+                            match encode(&Header::default(), &claims, &EncodingKey::from_secret(get_jwt_secret().as_bytes())) {
                                 Ok(token) => {
                                     HttpResponse::Ok().json(Resp::new(&token))
                                 },
