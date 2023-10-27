@@ -7,6 +7,7 @@ mod login;
 mod scopes;
 mod signup;
 mod structures;
+mod post;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
