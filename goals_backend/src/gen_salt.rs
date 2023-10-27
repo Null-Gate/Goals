@@ -1,6 +1,9 @@
-use rand::{distributions::DistString, prelude::Distribution, Rng};
+use rand::{distributions::DistString, prelude::Distribution, rngs::ThreadRng, Rng};
 
-pub struct GenString;
+#[derive(Clone)]
+pub struct GenString {
+    rngs: ThreadRng,
+}
 
 impl Distribution<u8> for GenString {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8 {
@@ -23,5 +26,20 @@ impl DistString for GenString {
             let v = string.as_mut_vec();
             v.extend(self.sample_iter(rng).take(len));
         }
+    }
+}
+
+impl GenString {
+    pub fn new() -> Self {
+        Self {
+            rngs: rand::thread_rng(),
+        }
+    }
+
+    pub fn gen_string(&mut self, min: usize, max: usize) -> String {
+        self.sample_string(
+            &mut self.rngs.to_owned(),
+            self.to_owned().rngs.gen_range(min..max),
+        )
     }
 }

@@ -1,14 +1,17 @@
-use actix_web::{post, web::Json, HttpResponse};
+use chrono::{Duration, Utc};
+use jsonwebtoken::{encode, Header, EncodingKey};
+
+use actix_multipart::form::MultipartForm;
+use actix_web::{post, HttpResponse, get, Responder};
 use argon2::{hash_encoded, Config, Variant, Version};
-use rand::{distributions::DistString, Rng};
 
-use crate::{structures::{SignUpInfo, DB}, gen_salt::GenString};
+use crate::{structures::{SignUpInfo, DB, Resp, UserInfo, Claims}, gen_salt::GenString, get_jwt_secret};
 
-#[post("/sign_up")]
-pub async fn sign_up(info: Json<SignUpInfo>) -> HttpResponse {
+#[post("sign_up")]
+pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResponse {
     let db = DB.get().await;
-    let mut rngs = rand::thread_rng();
-    let rand_salt = GenString.sample_string(&mut rngs.clone(), rngs.gen_range(20..100));
+    db.use_ns("ns").use_db("db").await.unwrap();
+    let rand_salt = GenString::new().gen_string(20, 200);
     let arg_cfg = Config {
         variant: Variant::Argon2i,
         version: Version::Version13,
@@ -18,6 +21,43 @@ pub async fn sign_up(info: Json<SignUpInfo>) -> HttpResponse {
         hash_length: 50,
         ..Default::default()
     };
-    let hash = hash_encoded(info.password.as_bytes(), rand_salt.as_bytes(), &arg_cfg);
-    todo!()
+    let pic_path = format!("/home/walker/rust/projects/Goals/goals_backend/files/{}-{}", GenString::new().gen_string(5, 20), form.upfp_pic.file_name.unwrap());
+    if form.upfp_pic.file.persist(&pic_path).is_err() {
+        return HttpResponse::InternalServerError().json(Resp::new("Sorry We're having some problem in saving you profile image!"));
+    }
+    match hash_encoded(form.password.as_bytes(), rand_salt.as_bytes(), &arg_cfg) {
+        Ok(hash) => {
+            let user_info = UserInfo {
+                username: form.username.to_string(),
+                fullname: form.fullname.to_string(),
+                password: hash,
+                up_posts: vec![],
+                pic_path,
+            };
+            match db.create::<Option<UserInfo>>(("user", form.username.to_string())).content(user_info.to_owned()).await {
+                Ok(resl) => {
+                    if resl.is_none() {
+                        return HttpResponse::InternalServerError().json(Resp::new("Sorry we're having some problem when creating your account! 1"));
+                    }
+                    let exp = (Utc::now() + Duration::days(9999999)).timestamp() as usize;
+                    let claims = Claims {
+                        username: user_info.username,
+                        password: user_info.password,
+                        exp
+                    };
+                    match encode(&Header::default(), &claims, &EncodingKey::from_secret(get_jwt_secret().as_bytes())) {
+                        Ok(token) => HttpResponse::Ok().json(Resp::new(&token)),
+                        Err(_) => HttpResponse::InternalServerError().json(Resp::new("Sorry We are having some problem when make your token!"))
+                    }
+                },
+                Err(e) => HttpResponse::InternalServerError().json(Resp::new(&format!("Sorry we're having some problem when creating your account! 2: {:?}", e)))
+            }
+        },
+        Err(_) => {HttpResponse::InternalServerError().json(Resp::new("Sorry We're having some problem when encrypting your password!"))}
+    }
+}
+
+#[get("/idk")]
+pub async fn idk() -> impl Responder {
+    "Bruh".to_owned()
 }

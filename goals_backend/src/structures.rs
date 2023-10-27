@@ -1,3 +1,4 @@
+use actix_multipart::form::{tempfile::TempFile, text::Text, MultipartForm};
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -9,7 +10,7 @@ use surrealdb::{
 
 lazy_static! {
     pub static ref DB: AsyncOnce<Surreal<Db>> = AsyncOnce::new(async {
-        Surreal::new::<File>("db.db").await.unwrap()
+        Surreal::new::<File>("/home/walker/rust/projects/Goals/goals_backend/db.db").await.unwrap()
     });
 }
 
@@ -37,21 +38,21 @@ pub struct LoginInfo {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(MultipartForm)]
 pub struct SignUpInfo {
-    pub username: String,
-    pub fullname: String,
-    pub password: String,
-    pub upfp_pic: Option<Vec<u8>>,
+    pub username: Text<String>,
+    pub fullname: Text<String>,
+    pub password: Text<String>,
+    pub upfp_pic: TempFile,
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone)]
 pub enum Time {
     TimeStamp(usize),
     Other(String),
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone)]
 pub enum Date {
     Sunday,
     Monday,
@@ -62,14 +63,14 @@ pub enum Date {
     Saturday,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Post {
     pub title: String,
     pub details: String,
     pub tables: HashMap<Date, HashMap<Time, String>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserInfo {
     pub username: String,
     pub fullname: String,

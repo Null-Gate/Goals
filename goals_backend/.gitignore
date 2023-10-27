@@ -3,3 +3,5 @@
 /db.db
 src/secrets.rs
 /.env
+/root_run
+/files
