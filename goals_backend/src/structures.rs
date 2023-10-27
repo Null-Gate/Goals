@@ -10,7 +10,9 @@ use surrealdb::{
 
 lazy_static! {
     pub static ref DB: AsyncOnce<Surreal<Db>> = AsyncOnce::new(async {
-        Surreal::new::<File>("/home/walker/rust/projects/Goals/goals_backend/db.db").await.unwrap()
+        Surreal::new::<File>("/home/walker/rust/projects/Goals/goals_backend/db.db")
+            .await
+            .unwrap()
     });
 }
 

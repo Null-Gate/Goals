@@ -1,11 +1,15 @@
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, Header, EncodingKey};
+use jsonwebtoken::{encode, EncodingKey, Header};
 
 use actix_multipart::form::MultipartForm;
-use actix_web::{post, HttpResponse, get, Responder};
+use actix_web::{get, post, HttpResponse, Responder};
 use argon2::{hash_encoded, Config, Variant, Version};
 
-use crate::{structures::{SignUpInfo, DB, Resp, UserInfo, Claims}, gen_salt::GenString, get_jwt_secret};
+use crate::{
+    gen_salt::GenString,
+    get_jwt_secret,
+    structures::{Claims, Resp, SignUpInfo, UserInfo, DB},
+};
 
 #[post("sign_up")]
 pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResponse {
@@ -21,9 +25,15 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
         hash_length: 50,
         ..Default::default()
     };
-    let pic_path = format!("/home/walker/rust/projects/Goals/goals_backend/files/{}-{}", GenString::new().gen_string(5, 20), form.upfp_pic.file_name.unwrap());
+    let pic_path = format!(
+        "/home/walker/rust/projects/Goals/goals_backend/files/{}-{}",
+        GenString::new().gen_string(5, 20),
+        form.upfp_pic.file_name.unwrap()
+    );
     if form.upfp_pic.file.persist(&pic_path).is_err() {
-        return HttpResponse::InternalServerError().json(Resp::new("Sorry We're having some problem in saving you profile image!"));
+        return HttpResponse::InternalServerError().json(Resp::new(
+            "Sorry We're having some problem in saving you profile image!",
+        ));
     }
     match hash_encoded(form.password.as_bytes(), rand_salt.as_bytes(), &arg_cfg) {
         Ok(hash) => {
@@ -34,26 +44,43 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
                 up_posts: vec![],
                 pic_path,
             };
-            match db.create::<Option<UserInfo>>(("user", form.username.to_string())).content(user_info.to_owned()).await {
+            match db
+                .create::<Option<UserInfo>>(("user", form.username.to_string()))
+                .content(user_info.to_owned())
+                .await
+            {
                 Ok(resl) => {
                     if resl.is_none() {
-                        return HttpResponse::InternalServerError().json(Resp::new("Sorry we're having some problem when creating your account! 1"));
+                        return HttpResponse::InternalServerError().json(Resp::new(
+                            "Sorry we're having some problem when creating your account! 1",
+                        ));
                     }
                     let exp = (Utc::now() + Duration::days(9999999)).timestamp() as usize;
                     let claims = Claims {
                         username: user_info.username,
                         password: user_info.password,
-                        exp
+                        exp,
                     };
-                    match encode(&Header::default(), &claims, &EncodingKey::from_secret(get_jwt_secret().as_bytes())) {
+                    match encode(
+                        &Header::default(),
+                        &claims,
+                        &EncodingKey::from_secret(get_jwt_secret().as_bytes()),
+                    ) {
                         Ok(token) => HttpResponse::Ok().json(Resp::new(&token)),
-                        Err(_) => HttpResponse::InternalServerError().json(Resp::new("Sorry We are having some problem when make your token!"))
+                        Err(_) => HttpResponse::InternalServerError().json(Resp::new(
+                            "Sorry We are having some problem when make your token!",
+                        )),
                     }
-                },
-                Err(e) => HttpResponse::InternalServerError().json(Resp::new(&format!("Sorry we're having some problem when creating your account! 2: {:?}", e)))
+                }
+                Err(e) => HttpResponse::InternalServerError().json(Resp::new(&format!(
+                    "Sorry we're having some problem when creating your account! 2: {:?}",
+                    e
+                ))),
             }
-        },
-        Err(_) => {HttpResponse::InternalServerError().json(Resp::new("Sorry We're having some problem when encrypting your password!"))}
+        }
+        Err(_) => HttpResponse::InternalServerError().json(Resp::new(
+            "Sorry We're having some problem when encrypting your password!",
+        )),
     }
 }
 
