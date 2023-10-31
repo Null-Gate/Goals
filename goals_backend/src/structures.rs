@@ -48,14 +48,21 @@ pub struct SignUpInfo {
     pub upfp_pic: TempFile,
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Debug)]
 pub enum Time {
-    TimeStamp(usize),
+    TimeStamp((u8, u8)),
     Other(String),
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone)]
+impl Default for Time {
+    fn default() -> Self {
+        Self::TimeStamp((0, 0))
+    }
+}
+
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Default, Debug)]
 pub enum Date {
+    #[default]
     Sunday,
     Monday,
     Tuesday,
@@ -65,11 +72,25 @@ pub enum Date {
     Saturday,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Post {
     pub title: String,
     pub details: String,
-    pub tables: HashMap<Date, HashMap<Time, String>>,
+    pub tables: HashMap<Date, HashMap<String, Time>>,
+}
+
+impl Default for Post {
+    fn default() -> Self {
+        let mut tables = HashMap::new();
+        let mut nst_hm = HashMap::new();
+        nst_hm.insert(String::default(), Time::default());
+        tables.insert(Date::default(), nst_hm);
+        Self {
+            title: String::new(),
+            details: String::new(),
+            tables,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -78,5 +99,14 @@ pub struct UserInfo {
     pub fullname: String,
     pub password: String,
     pub up_posts: Vec<Post>,
+    pub pic_path: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DBUserInfo {
+    pub username: String,
+    pub fullname: String,
+    pub password: String,
+    pub up_posts: Vec<String>,
     pub pic_path: String,
 }

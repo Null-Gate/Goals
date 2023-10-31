@@ -1,16 +1,19 @@
 use actix_web::{post, web::Json, HttpResponse};
 use argon2::verify_encoded;
-use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
+use chrono::{Utc, Duration};
 
 use crate::{get_jwt_secret, structures::*};
 
 #[post("/login")]
 pub async fn login(info: Json<LoginInfo>) -> HttpResponse {
     let db = DB.get().await;
-    db.use_ns("ns").use_db("db").await.unwrap();
+    if db.use_ns("ns").use_db("db").await.is_err() {
+       return HttpResponse::InternalServerError().json(Resp::new("Sorry We are having some problem when opening our database!"));
+    }
+
     match db
-        .select::<Option<UserInfo>>(("user", &info.username))
+        .select::<Option<DBUserInfo>>(("user", &info.username))
         .await
     {
         Ok(Some(user)) => match verify_encoded(&user.password, info.password.as_bytes()) {
