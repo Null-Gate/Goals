@@ -7,6 +7,7 @@ use crate::{structures::{Post, DB, Resp, Claims, DBUserInfo}, get_jwt_secret, ge
 #[post("/upload_post/{token}")]
 pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse {
     let db = DB.get().await;
+    db.use_ns("ns").use_db("db").await.unwrap();
     match decode::<Claims>(&token, &DecodingKey::from_secret(get_jwt_secret().as_bytes()), &Validation::new(Algorithm::HS256)) {
         Ok(claims) => {
             match db.select::<Option<DBUserInfo>>(("user", &claims.claims.username)).await {
