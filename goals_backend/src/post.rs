@@ -15,8 +15,7 @@ pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse 
                     match db.create::<Option<Post>>(("post", &post_id)).content(post).await {
                         Ok(Some(s_post)) => {
                             match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &format!("post:{post_id}"))).await {
-                                Ok(Some(uinfo)) => {
-                                    println!("{uinfo:?}");
+                                Ok(Some(_)) => {
                                     HttpResponse::Ok().json(s_post)
                                 },
                                 Ok(None) => {
