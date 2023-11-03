@@ -1,4 +1,4 @@
-#Thu Nov 02 18:11:04 MMT 2023
-base.0=C\:\\Users\\DELL\\Desktop\\Goal Mobile\\Goals\\goals_mobile\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
+#Thu Nov 02 19:39:04 PDT 2023
+base.0=D\:\\flutter\\freelance projects\\Goals\\goals_mobile\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
 path.0=classes.dex
 renamed.0=classes.dex

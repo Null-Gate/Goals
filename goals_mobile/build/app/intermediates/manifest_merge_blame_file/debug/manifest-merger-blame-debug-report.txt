@@ -13,13 +13,13 @@
 13         to allow setting breakpoints, to provide hot reload, etc.
 14    -->
 15    <uses-permission android:name="android.permission.INTERNET" />
-15-->C:\Users\DELL\Desktop\Goal Mobile\Goals\goals_mobile\android\app\src\debug\AndroidManifest.xml:6:5-66
-15-->C:\Users\DELL\Desktop\Goal Mobile\Goals\goals_mobile\android\app\src\debug\AndroidManifest.xml:6:22-64
+15-->D:\flutter\freelance projects\Goals\goals_mobile\android\app\src\debug\AndroidManifest.xml:6:5-66
+15-->D:\flutter\freelance projects\Goals\goals_mobile\android\app\src\debug\AndroidManifest.xml:6:22-64
 16
 17    <application
 18        android:name="android.app.Application"
 19        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-19-->[androidx.core:core:1.6.0] C:\Users\DELL\.gradle\caches\transforms-3\7e9df2ac2213a6bd3cef0f2f27870d79\transformed\core-1.6.0\AndroidManifest.xml:24:18-86
+19-->[androidx.core:core:1.6.0] C:\Users\Administrator\.gradle\caches\transforms-3\46ba99fe9efa61652d55d750c2b6c036\transformed\core-1.6.0\AndroidManifest.xml:24:18-86
 20        android:debuggable="true"
 21        android:icon="@mipmap/ic_launcher"
 22        android:label="goals" >
@@ -57,17 +57,17 @@
 54            android:value="2" />
 55
 56        <uses-library
-56-->[androidx.window:window:1.0.0-beta04] C:\Users\DELL\.gradle\caches\transforms-3\25cee5f028ac2a6b79fd6278ff5b59e2\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:25:9-27:40
+56-->[androidx.window:window:1.0.0-beta04] C:\Users\Administrator\.gradle\caches\transforms-3\82f218b30ba1b0bb05bf622761b8068e\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:25:9-27:40
 57            android:name="androidx.window.extensions"
-57-->[androidx.window:window:1.0.0-beta04] C:\Users\DELL\.gradle\caches\transforms-3\25cee5f028ac2a6b79fd6278ff5b59e2\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:26:13-54
+57-->[androidx.window:window:1.0.0-beta04] C:\Users\Administrator\.gradle\caches\transforms-3\82f218b30ba1b0bb05bf622761b8068e\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:26:13-54
 58            android:required="false" />
-58-->[androidx.window:window:1.0.0-beta04] C:\Users\DELL\.gradle\caches\transforms-3\25cee5f028ac2a6b79fd6278ff5b59e2\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:27:13-37
+58-->[androidx.window:window:1.0.0-beta04] C:\Users\Administrator\.gradle\caches\transforms-3\82f218b30ba1b0bb05bf622761b8068e\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:27:13-37
 59        <uses-library
-59-->[androidx.window:window:1.0.0-beta04] C:\Users\DELL\.gradle\caches\transforms-3\25cee5f028ac2a6b79fd6278ff5b59e2\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:28:9-30:40
+59-->[androidx.window:window:1.0.0-beta04] C:\Users\Administrator\.gradle\caches\transforms-3\82f218b30ba1b0bb05bf622761b8068e\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:28:9-30:40
 60            android:name="androidx.window.sidecar"
-60-->[androidx.window:window:1.0.0-beta04] C:\Users\DELL\.gradle\caches\transforms-3\25cee5f028ac2a6b79fd6278ff5b59e2\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:29:13-51
+60-->[androidx.window:window:1.0.0-beta04] C:\Users\Administrator\.gradle\caches\transforms-3\82f218b30ba1b0bb05bf622761b8068e\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:29:13-51
 61            android:required="false" />
-61-->[androidx.window:window:1.0.0-beta04] C:\Users\DELL\.gradle\caches\transforms-3\25cee5f028ac2a6b79fd6278ff5b59e2\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:30:13-37
+61-->[androidx.window:window:1.0.0-beta04] C:\Users\Administrator\.gradle\caches\transforms-3\82f218b30ba1b0bb05bf622761b8068e\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:30:13-37
 62    </application>
 63
 64</manifest>

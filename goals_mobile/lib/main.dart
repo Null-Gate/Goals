@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:goals/pages/sign_up_page.dart';
+import 'package:goals/pages/login_page.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SignUpPage(),
+      home: LoginPage(),
     );
   }
 }
