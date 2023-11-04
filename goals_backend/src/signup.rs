@@ -1,3 +1,4 @@
+use image::{io::Reader, ImageFormat::{Png, Jpeg}};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use chrono::{Utc, Duration};
 
@@ -28,6 +29,42 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
         hash_length: 256,
         ..Default::default()
     };
+
+    match db.select::<Option<DBUserInfo>>(("user", form.username.as_str())).await {
+        Ok(Some(_)) => {
+            return HttpResponse::BadRequest().json(Resp::new("Sorry The User is already exits!"));
+        },
+        Ok(None) => {},
+        Err(_) => {
+            return HttpResponse::InternalServerError().json(Resp::new("Sorry we're having some problem when creating your account!"));
+        }
+    }
+
+    match Reader::open(form.upfp_pic.file.path()) {
+        Ok(r) => {
+            match r.with_guessed_format() {
+                Ok(img) => {
+                    match img.format() {
+                        Some(Png) | Some(Jpeg) => {},
+                        _ => {
+                            return HttpResponse::UnsupportedMediaType().json(Resp::new("Sorry your image format is not  supported!"));
+                        }
+                    }
+                },
+                Err(_) => {
+                    return HttpResponse::InternalServerError().json(Resp::new("Sorry We're having Some Problem while reading your pofile picture!"));
+                }
+            }
+        },
+        Err(_) => {
+            return HttpResponse::InternalServerError().json(Resp::new("Sorry We're having Some Problem while reading your pofile picture!"));
+        }
+    }
+
+    if form.upfp_pic.size > 538624 {
+        return HttpResponse::PayloadTooLarge().json(Resp::new("Sorry Max Limit is 526kb!!"));
+    }
+
     let pic_path = if let Some(img_name) = form.upfp_pic.file_name {
         format!(
         "/home/walker/rust/projects/Goals/goals_backend/files/{}-{}",
