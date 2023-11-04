@@ -1,6 +1,6 @@
 use actix_web::{get, HttpResponse};
 
-use crate::structures::{DB, Post};
+use crate::structures::{DB};
 
 #[get("/fetch_posts")]
 pub async fn fetch_posts() -> HttpResponse {
