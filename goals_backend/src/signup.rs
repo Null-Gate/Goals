@@ -1,10 +1,14 @@
+use std::path::Path;
+
 use image::{io::Reader, ImageFormat::{Png, Jpeg}};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use chrono::{Utc, Duration};
 
+use directories::BaseDirs;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, HttpResponse, Responder};
 use argon2::{hash_encoded, Config, Variant, Version};
+use tokio::fs;
 
 use crate::{
     gen_salt::GenString,
@@ -61,13 +65,22 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
         }
     }
 
+    let dir = format!("{}/Goals", BaseDirs::new().unwrap().cache_dir().to_string_lossy());
+
     if form.upfp_pic.size > 538624 {
         return HttpResponse::PayloadTooLarge().json(Resp::new("Sorry Max Limit is 526kb!!"));
     }
 
+    if !Path::new(&dir).exists() && fs::create_dir(&dir).await.is_err() {
+        return HttpResponse::InternalServerError().json(Resp::new(
+            "Sorry We're having some problem in saving your profile image!",
+        ));
+    }
+
     let pic_path = if let Some(img_name) = form.upfp_pic.file_name {
         format!(
-        "/home/walker/rust/projects/Goals/goals_backend/files/{}-{}",
+        "{}/{}-{}",
+        dir,
         GenString::new().gen_string(5, 20),
         img_name)
     } else {
@@ -75,7 +88,7 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
     };
     if form.upfp_pic.file.persist(&pic_path).is_err() {
         return HttpResponse::InternalServerError().json(Resp::new(
-            "Sorry We're having some problem in saving you profile image!",
+            "Sorry We're having some problem in saving your profile image!",
         ));
     }
     match hash_encoded(form.password.as_bytes(), rand_salt.as_bytes(), &arg_cfg) {

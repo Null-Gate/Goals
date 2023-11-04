@@ -17,6 +17,7 @@ actix-multipart = "0.6.1"
 actix-web = "4.4.0"
 async_once = "0.2.6"
 chrono = { version = "0.4.31", default-features = false, features = ["clock"] }
+directories = "5.0.1"
 dotenvy = "0.15.7"
 futures-util = "0.3.29"
 image = "0.24.7"
