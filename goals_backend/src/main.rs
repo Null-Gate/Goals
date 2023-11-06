@@ -1,6 +1,10 @@
+use std::path::Path;
+
 use actix_multipart::form::tempfile::TempFileConfig;
 use actix_web::{App, HttpServer};
+use directories::BaseDirs;
 use scopes::auth_scope;
+use tokio::fs;
 
 mod gen_salt;
 mod login;
@@ -12,11 +16,15 @@ mod fetch_post;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    let dir = format!("{}/user_assets", get_cache_dir().await);
+    if !Path::new(&dir).exists() { 
+        fs::create_dir(&dir).await.unwrap()
+    }
+    HttpServer::new(move || {
         App::new()
             .app_data(
                 TempFileConfig::default()
-                    .directory("/home/walker/rust/projects/Goals/goals_backend/files"),
+                    .directory(&dir),
             )
             .service(auth_scope())
     })
@@ -27,4 +35,12 @@ async fn main() -> std::io::Result<()> {
 
 fn get_jwt_secret() -> String {
     dotenvy::var("JWT_SECRET_KEY").unwrap()
+}
+
+async fn get_cache_dir() -> String {
+    let dir = format!("{}/Goals", BaseDirs::new().unwrap().cache_dir().to_string_lossy());
+    if !Path::new(&dir).exists() { 
+        fs::create_dir(&dir).await.unwrap()
+    }
+    dir
 }

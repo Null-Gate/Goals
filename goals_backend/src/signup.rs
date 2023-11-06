@@ -4,7 +4,6 @@ use image::{io::Reader, ImageFormat::{Png, Jpeg}};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use chrono::{Utc, Duration};
 
-use directories::BaseDirs;
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, HttpResponse, Responder};
 use argon2::{hash_encoded, Config, Variant, Version};
@@ -13,7 +12,7 @@ use tokio::fs;
 use crate::{
     gen_salt::GenString,
     get_jwt_secret,
-    structures::{Claims, Resp, SignUpInfo, DBUserInfo, DB},
+    structures::{Claims, Resp, SignUpInfo, DBUserInfo, DB}, get_cache_dir,
 };
 
 #[post("sign_up")]
@@ -65,11 +64,11 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
         }
     }
 
-    let dir = format!("{}/Goals", BaseDirs::new().unwrap().cache_dir().to_string_lossy());
-
     if form.upfp_pic.size > 538624 {
         return HttpResponse::PayloadTooLarge().json(Resp::new("Sorry Max Limit is 526kb!!"));
     }
+
+    let dir = format!("{}/user_assets", get_cache_dir().await);
 
     if !Path::new(&dir).exists() && fs::create_dir(&dir).await.is_err() {
         return HttpResponse::InternalServerError().json(Resp::new(
