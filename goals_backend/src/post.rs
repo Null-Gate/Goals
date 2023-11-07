@@ -2,18 +2,22 @@ use actix_web::{post, HttpResponse, web::{Json, Path}, get};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use surrealdb::opt::PatchOp;
 
-use crate::{structures::{Post, DB, Resp, Claims, DBUserInfo}, get_jwt_secret, gen_salt::GenString};
+use crate::{structures::{Post, DB, Resp, Claims, DBUserInfo, DBPost}, get_jwt_secret, gen_salt::GenString};
 
 #[post("/upload_post/{token}")]
 pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse {
     let db = DB.get().await;
+    let post = DBPost {
+        post: post.into_inner(),
+        ..Default::default()
+    };
     db.use_ns("ns").use_db("db").await.unwrap();
     match decode::<Claims>(&token, &DecodingKey::from_secret(get_jwt_secret().as_bytes()), &Validation::new(Algorithm::HS256)) {
         Ok(claims) => {
             match db.select::<Option<DBUserInfo>>(("user", &claims.claims.username)).await {
                 Ok(Some(_)) => {
                     let post_id = GenString::new().gen_string(10, 20);
-                    match db.create::<Option<Post>>(("post", &post_id)).content(post).await {
+                    match db.create::<Option<DBPost>>(("post", &post_id)).content(post).await {
                         Ok(Some(s_post)) => {
                             match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &format!("post:{post_id}"))).await {
                                 Ok(Some(_)) => {

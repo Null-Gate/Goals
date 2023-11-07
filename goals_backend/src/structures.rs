@@ -81,6 +81,27 @@ pub struct Post {
     pub tables: HashMap<Date, HashMap<String, Time>>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DBPost {
+    pub post: Post,
+    pub votes: usize,
+    pub voters: Vec<String>,
+}
+
+impl Default for DBPost {
+    fn default() -> Self {
+        let mut tables = HashMap::new();
+        let mut nst_hm = HashMap::new();
+        nst_hm.insert(String::default(), Time::default());
+        tables.insert(Date::default(), nst_hm);
+        Self {
+            post: Post::default(),
+            votes: 0,
+            voters: Vec::new(),
+        }
+    }
+}
+
 impl Default for Post {
     fn default() -> Self {
         let mut tables = HashMap::new();
