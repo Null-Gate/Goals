@@ -13,6 +13,7 @@ mod signup;
 mod structures;
 mod post;
 mod fetch_post;
+mod votes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
