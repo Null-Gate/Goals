@@ -1,4 +1,4 @@
-use actix_web::{post, HttpResponse, web::{Path, self}};
+use actix_web::{post, HttpResponse, web::Path};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use surrealdb::opt::PatchOp;
 
@@ -54,7 +54,7 @@ async fn dw_vote_up_vote(post_id: &str, user_id: &str, votes: usize) -> HttpResp
             HttpResponse::Ok().json(post)
         },
         _ => {
-            HttpResponse::InternalServerError().json(Resp::new("Something went wrong while down voting the post!!"))
+            HttpResponse::InternalServerError().json(Resp::new("Something went wrong while removing voting the post!!"))
         },
     }
 }
@@ -100,7 +100,18 @@ async fn dw_vote(post_id: Path<String>, token: Path<String>) -> HttpResponse {
 }
 
 async fn up_vote_dw_vote(post_id: &str, user_id: &str, votes: usize) -> HttpResponse {
-    todo!()
+    let db = DB.get().await;
+    if db.use_ns("ns").use_db("db").await.is_err() {
+       return HttpResponse::InternalServerError().json(Resp::new("Sorry We are having some problem when opening our database!"));
+    }
+    match db.update::<Option<DBPost>>(("post", post_id)).patch(PatchOp::replace("/votes", votes + 1)).patch(PatchOp::remove(&format!("/voters/-user:{user_id}"))).await {
+        Ok(Some(post)) => {
+            HttpResponse::Ok().json(post)
+        },
+        _ => {
+            HttpResponse::InternalServerError().json(Resp::new("Something went wrong while removing voting the post!!"))
+        },
+    }
 }
 
 async fn gt_vote() {}
