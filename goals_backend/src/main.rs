@@ -6,27 +6,24 @@ use directories::BaseDirs;
 use scopes::auth_scope;
 use tokio::fs;
 
+mod fetch_post;
 mod gen_salt;
 mod login;
+mod post;
 mod scopes;
 mod signup;
 mod structures;
-mod post;
-mod fetch_post;
 mod votes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let dir = format!("{}/user_assets", get_cache_dir().await);
-    if !Path::new(&dir).exists() { 
+    if !Path::new(&dir).exists() {
         fs::create_dir(&dir).await.unwrap()
     }
     HttpServer::new(move || {
         App::new()
-            .app_data(
-                TempFileConfig::default()
-                    .directory(&dir),
-            )
+            .app_data(TempFileConfig::default().directory(&dir))
             .service(auth_scope())
     })
     .bind(("127.0.0.1", 9899))?
@@ -39,8 +36,11 @@ fn get_jwt_secret() -> String {
 }
 
 async fn get_cache_dir() -> String {
-    let dir = format!("{}/Goals", BaseDirs::new().unwrap().cache_dir().to_string_lossy());
-    if !Path::new(&dir).exists() { 
+    let dir = format!(
+        "{}/Goals",
+        BaseDirs::new().unwrap().cache_dir().to_string_lossy()
+    );
+    if !Path::new(&dir).exists() {
         fs::create_dir(&dir).await.unwrap()
     }
     dir

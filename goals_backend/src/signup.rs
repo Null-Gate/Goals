@@ -1,8 +1,11 @@
 use std::path::Path;
 
-use image::{io::Reader, ImageFormat::{Png, Jpeg}};
+use chrono::{Duration, Utc};
+use image::{
+    io::Reader,
+    ImageFormat::{Jpeg, Png},
+};
 use jsonwebtoken::{encode, EncodingKey, Header};
-use chrono::{Utc, Duration};
 
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, HttpResponse, Responder};
@@ -11,15 +14,17 @@ use tokio::fs;
 
 use crate::{
     gen_salt::GenString,
-    get_jwt_secret,
-    structures::{Claims, Resp, SignUpInfo, DBUserInfo, DB}, get_cache_dir,
+    get_cache_dir, get_jwt_secret,
+    structures::{Claims, DBUserInfo, Resp, SignUpInfo, DB},
 };
 
 #[post("sign_up")]
 pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResponse {
     let db = DB.get().await;
     if db.use_ns("ns").use_db("db").await.is_err() {
-       return HttpResponse::InternalServerError().json(Resp::new("Sorry We are having some problem when opening our database!"));
+        return HttpResponse::InternalServerError().json(Resp::new(
+            "Sorry We are having some problem when opening our database!",
+        ));
     }
 
     let rand_salt = GenString::new().gen_string(20, 200);
@@ -33,34 +38,40 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
         ..Default::default()
     };
 
-    match db.select::<Option<DBUserInfo>>(("user", form.username.as_str())).await {
+    match db
+        .select::<Option<DBUserInfo>>(("user", form.username.as_str()))
+        .await
+    {
         Ok(Some(_)) => {
             return HttpResponse::BadRequest().json(Resp::new("Sorry The User is already exits!"));
-        },
-        Ok(None) => {},
+        }
+        Ok(None) => {}
         Err(_) => {
-            return HttpResponse::InternalServerError().json(Resp::new("Sorry we're having some problem when creating your account!"));
+            return HttpResponse::InternalServerError().json(Resp::new(
+                "Sorry we're having some problem when creating your account!",
+            ));
         }
     }
 
     match Reader::open(form.upfp_pic.file.path()) {
-        Ok(r) => {
-            match r.with_guessed_format() {
-                Ok(img) => {
-                    match img.format() {
-                        Some(Png) | Some(Jpeg) => {},
-                        _ => {
-                            return HttpResponse::UnsupportedMediaType().json(Resp::new("Sorry your image format is not  supported!"));
-                        }
-                    }
-                },
-                Err(_) => {
-                    return HttpResponse::InternalServerError().json(Resp::new("Sorry We're having Some Problem while reading your pofile picture!"));
+        Ok(r) => match r.with_guessed_format() {
+            Ok(img) => match img.format() {
+                Some(Png) | Some(Jpeg) => {}
+                _ => {
+                    return HttpResponse::UnsupportedMediaType()
+                        .json(Resp::new("Sorry your image format is not  supported!"));
                 }
+            },
+            Err(_) => {
+                return HttpResponse::InternalServerError().json(Resp::new(
+                    "Sorry We're having Some Problem while reading your pofile picture!",
+                ));
             }
         },
         Err(_) => {
-            return HttpResponse::InternalServerError().json(Resp::new("Sorry We're having Some Problem while reading your pofile picture!"));
+            return HttpResponse::InternalServerError().json(Resp::new(
+                "Sorry We're having Some Problem while reading your pofile picture!",
+            ));
         }
     }
 
@@ -78,12 +89,15 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
 
     let pic_path = if let Some(img_name) = form.upfp_pic.file_name {
         format!(
-        "{}/{}-{}",
-        dir,
-        GenString::new().gen_string(5, 20),
-        img_name)
+            "{}/{}-{}",
+            dir,
+            GenString::new().gen_string(5, 20),
+            img_name
+        )
     } else {
-        return HttpResponse::BadRequest().json(Resp::new("Sorry You have to provide the name of the image!"));
+        return HttpResponse::BadRequest().json(Resp::new(
+            "Sorry You have to provide the name of the image!",
+        ));
     };
     if form.upfp_pic.file.persist(&pic_path).is_err() {
         return HttpResponse::InternalServerError().json(Resp::new(
@@ -128,7 +142,7 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
                     }
                 }
                 Err(_) => HttpResponse::InternalServerError().json(Resp::new(
-                    "Sorry we're having some problem when creating your account!"
+                    "Sorry we're having some problem when creating your account!",
                 )),
             }
         }

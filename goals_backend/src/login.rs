@@ -1,7 +1,7 @@
 use actix_web::{post, web::Json, HttpResponse};
 use argon2::verify_encoded;
+use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
-use chrono::{Utc, Duration};
 
 use crate::{get_jwt_secret, structures::*};
 
@@ -9,7 +9,9 @@ use crate::{get_jwt_secret, structures::*};
 pub async fn login(info: Json<LoginInfo>) -> HttpResponse {
     let db = DB.get().await;
     if db.use_ns("ns").use_db("db").await.is_err() {
-       return HttpResponse::InternalServerError().json(Resp::new("Sorry We are having some problem when opening our database!"));
+        return HttpResponse::InternalServerError().json(Resp::new(
+            "Sorry We are having some problem when opening our database!",
+        ));
     }
 
     match db

@@ -1,10 +1,11 @@
 use actix_web::{web, Scope};
 
 use crate::{
+    fetch_post::fetch_posts,
     login::login,
     post::{default_post, upload_post},
-    fetch_post::fetch_posts,
     signup::{idk, sign_up},
+    votes::{dw_vote, up_vote},
 };
 pub fn auth_scope() -> Scope {
     web::scope("/api")
@@ -14,4 +15,6 @@ pub fn auth_scope() -> Scope {
         .service(default_post)
         .service(sign_up)
         .service(idk)
+        .service(up_vote)
+        .service(dw_vote)
 }

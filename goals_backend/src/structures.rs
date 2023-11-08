@@ -81,11 +81,30 @@ pub struct Post {
     pub tables: HashMap<Date, HashMap<String, Time>>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+pub enum Vote {
+    #[default]
+    Up,
+    Down,
+}
+
+impl std::ops::Not for Vote {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DBPost {
+    pub post_id: String,
     pub post: Post,
     pub votes: usize,
-    pub voters: Vec<String>,
+    pub voters: HashMap<String, Vote>,
 }
 
 impl Default for DBPost {
@@ -95,9 +114,10 @@ impl Default for DBPost {
         nst_hm.insert(String::default(), Time::default());
         tables.insert(Date::default(), nst_hm);
         Self {
+            post_id: String::default(),
             post: Post::default(),
             votes: 0,
-            voters: Vec::new(),
+            voters: HashMap::default(),
         }
     }
 }
