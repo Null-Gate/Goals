@@ -2,9 +2,10 @@ use actix_multipart::form::{tempfile::TempFile, text::Text, MultipartForm};
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use surrealdb::{
     engine::local::{Db, File},
+    opt::RecordId,
     Surreal,
 };
 
@@ -81,30 +82,13 @@ pub struct Post {
     pub tables: HashMap<Date, HashMap<String, Time>>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
-pub enum Vote {
-    #[default]
-    Up,
-    Down,
-}
-
-impl std::ops::Not for Vote {
-    type Output = Self;
-
-    fn not(self) -> Self::Output {
-        match self {
-            Self::Up => Self::Down,
-            Self::Down => Self::Up,
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DBPost {
     pub post_id: String,
     pub post: Post,
-    pub votes: usize,
-    pub voters: HashMap<String, Vote>,
+    pub votes: isize,
+    pub up_voters: HashSet<RecordId>,
+    pub dw_voters: HashSet<RecordId>,
 }
 
 impl Default for DBPost {
@@ -117,7 +101,8 @@ impl Default for DBPost {
             post_id: String::default(),
             post: Post::default(),
             votes: 0,
-            voters: HashMap::default(),
+            up_voters: HashSet::default(),
+            dw_voters: HashSet::default(),
         }
     }
 }
@@ -150,6 +135,6 @@ pub struct DBUserInfo {
     pub username: String,
     pub fullname: String,
     pub password: String,
-    pub up_posts: Vec<String>,
+    pub up_posts: Vec<RecordId>,
     pub pic_path: String,
 }

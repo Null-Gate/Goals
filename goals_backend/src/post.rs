@@ -4,7 +4,10 @@ use actix_web::{
     HttpResponse,
 };
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
-use surrealdb::opt::PatchOp;
+use surrealdb::{
+    opt::{PatchOp, RecordId},
+    sql::Id,
+};
 
 use crate::{
     gen_salt::GenString,
@@ -36,7 +39,7 @@ pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse 
 
                     match db.create::<Option<DBPost>>(("post", &post_id)).content(post).await {
                         Ok(Some(s_post)) => {
-                            match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &format!("post:{post_id}"))).await {
+                            match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &RecordId::from(("post", Id::String(post_id))))).await {
                                 Ok(Some(_)) => {
                                     HttpResponse::Ok().json(s_post)
                                 },
