@@ -7,6 +7,7 @@ use scopes::auth_scope;
 use tokio::fs;
 
 mod fetch_post;
+mod fetch;
 mod gen_salt;
 mod login;
 mod post;

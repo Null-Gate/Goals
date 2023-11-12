@@ -10,7 +10,6 @@ use surrealdb::{
 };
 
 use crate::{
-    gen_salt::GenString,
     get_jwt_secret,
     structures::{Claims, DBPost, DBUserInfo, Post, Resp, DB},
 };
@@ -29,7 +28,7 @@ pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse 
         Ok(claims) => {
             match db.select::<Option<DBUserInfo>>(("user", &claims.claims.username)).await {
                 Ok(Some(_)) => {
-                    let post_id = GenString::new().gen_string(10, 20);
+                    let post_id = Id::rand();
 
                     let post = DBPost {
                         post_id: post_id.clone(),
@@ -37,9 +36,9 @@ pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse 
                         ..Default::default()
                     };
 
-                    match db.create::<Option<DBPost>>(("post", &post_id)).content(post).await {
+                    match db.create::<Option<DBPost>>(("post", post_id.clone())).content(post).await {
                         Ok(Some(s_post)) => {
-                            match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &RecordId::from(("post", Id::String(post_id))))).await {
+                            match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &RecordId::from(("post", post_id)))).await {
                                 Ok(Some(_)) => {
                                     HttpResponse::Ok().json(s_post)
                                 },

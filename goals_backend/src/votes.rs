@@ -27,7 +27,7 @@ pub async fn up_vote(paths: Path<(String, String)>) -> HttpResponse {
             match (
                 db.select::<Option<DBUserInfo>>(("user", &claims.claims.username))
                     .await,
-                db.select::<Option<DBPost>>(("post", post_id)).await,
+                db.select::<Option<DBPost>>(("post", Id::String(post_id.to_owned()))).await,
             ) {
                 (Ok(Some(_)), Ok(Some(mut post))) => {
                     let rid = RecordId::from(("user", Id::String(claims.claims.username.clone())));
@@ -41,7 +41,7 @@ pub async fn up_vote(paths: Path<(String, String)>) -> HttpResponse {
                     }
                     post.votes = post.up_voters.len() as isize - post.dw_voters.len() as isize;
                     match db
-                        .update::<Option<DBPost>>(("post", post_id))
+                        .update::<Option<DBPost>>(("post", Id::String(post_id.to_owned())))
                         .content(post)
                         .await
                     {
@@ -86,7 +86,7 @@ pub async fn dw_vote(paths: Path<(String, String)>) -> HttpResponse {
             match (
                 db.select::<Option<DBUserInfo>>(("user", &claims.claims.username))
                     .await,
-                db.select::<Option<DBPost>>(("post", post_id)).await,
+                db.select::<Option<DBPost>>(("post", Id::String(post_id.to_owned()))).await,
             ) {
                 (Ok(Some(_)), Ok(Some(mut post))) => {
                     let rid = RecordId::from(("user", Id::String(claims.claims.username.clone())));
@@ -101,7 +101,7 @@ pub async fn dw_vote(paths: Path<(String, String)>) -> HttpResponse {
                     post.votes = post.up_voters.len() as isize - post.dw_voters.len() as isize;
 
                     match db
-                        .update::<Option<DBPost>>(("post", post_id))
+                        .update::<Option<DBPost>>(("post", Id::String(post_id.to_owned())))
                         .content(post)
                         .await
                     {

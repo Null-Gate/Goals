@@ -6,6 +6,7 @@ use std::collections::{HashMap, HashSet};
 use surrealdb::{
     engine::local::{Db, File},
     opt::RecordId,
+    sql::Id,
     Surreal,
 };
 
@@ -84,7 +85,7 @@ pub struct Post {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DBPost {
-    pub post_id: String,
+    pub post_id: Id,
     pub post: Post,
     pub votes: isize,
     pub up_voters: HashSet<RecordId>,
@@ -98,7 +99,7 @@ impl Default for DBPost {
         nst_hm.insert(String::default(), Time::default());
         tables.insert(Date::default(), nst_hm);
         Self {
-            post_id: String::default(),
+            post_id: Id::rand(),
             post: Post::default(),
             votes: 0,
             up_voters: HashSet::default(),
