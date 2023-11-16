@@ -10,6 +10,7 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use actix_multipart::form::MultipartForm;
 use actix_web::{get, post, HttpResponse, Responder};
 use argon2::{hash_encoded, Config, Variant, Version};
+use surrealdb::sql::Id;
 use tokio::fs;
 
 use crate::{
@@ -39,7 +40,7 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
     };
 
     match db
-        .select::<Option<DBUserInfo>>(("user", form.username.as_str()))
+        .select::<Option<DBUserInfo>>(("user", Id::String(form.username.to_string())))
         .await
     {
         Ok(Some(_)) => {
@@ -86,13 +87,15 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
             "Sorry We're having some problem in saving your profile image!",
         ));
     }
+    
+    let mut gen_img_name = String::new();
 
     let pic_path = if let Some(img_name) = form.upfp_pic.file_name {
+        gen_img_name.push_str(&format!("{}-{}", GenString::new().gen_string(10, 30), img_name));
         format!(
-            "{}/{}-{}",
+            "{}/{}",
             dir,
-            GenString::new().gen_string(5, 20),
-            img_name
+            gen_img_name,
         )
     } else {
         return HttpResponse::BadRequest().json(Resp::new(
@@ -111,10 +114,10 @@ pub async fn sign_up(MultipartForm(form): MultipartForm<SignUpInfo>) -> HttpResp
                 fullname: form.fullname.0,
                 password: hash,
                 up_posts: vec![],
-                pic_path,
+                pic_path: format!("http://localhost:8090/api/user_pic/{}", gen_img_name),
             };
             match db
-                .create::<Option<DBUserInfo>>(("user", form.username.to_string()))
+                .create::<Option<DBUserInfo>>(("user", Id::String(form.username.to_string())))
                 .content(user_info.to_owned())
                 .await
             {

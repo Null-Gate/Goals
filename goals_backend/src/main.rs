@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(TempFileConfig::default().directory(&dir))
             .service(auth_scope())
     })
-    .bind(("127.0.0.1", 9899))?
+    .bind(("127.0.0.1", 8090))?
     .run()
     .await
 }

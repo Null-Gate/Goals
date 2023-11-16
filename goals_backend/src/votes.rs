@@ -25,7 +25,7 @@ pub async fn up_vote(paths: Path<(String, String)>) -> HttpResponse {
     ) {
         Ok(claims) => {
             match (
-                db.select::<Option<DBUserInfo>>(("user", &claims.claims.username))
+                db.select::<Option<DBUserInfo>>(("user", Id::String(claims.claims.username.to_owned())))
                     .await,
                 db.select::<Option<DBPost>>(("post", Id::String(post_id.to_owned()))).await,
             ) {
@@ -84,7 +84,7 @@ pub async fn dw_vote(paths: Path<(String, String)>) -> HttpResponse {
     ) {
         Ok(claims) => {
             match (
-                db.select::<Option<DBUserInfo>>(("user", &claims.claims.username))
+                db.select::<Option<DBUserInfo>>(("user", Id::String(claims.claims.username.to_owned())))
                     .await,
                 db.select::<Option<DBPost>>(("post", Id::String(post_id.to_owned()))).await,
             ) {

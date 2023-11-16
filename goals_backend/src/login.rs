@@ -2,6 +2,7 @@ use actix_web::{post, web::Json, HttpResponse};
 use argon2::verify_encoded;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
+use surrealdb::sql::Id;
 
 use crate::{get_jwt_secret, structures::*};
 
@@ -15,7 +16,7 @@ pub async fn login(info: Json<LoginInfo>) -> HttpResponse {
     }
 
     match db
-        .select::<Option<DBUserInfo>>(("user", &info.username))
+        .select::<Option<DBUserInfo>>(("user", Id::String(info.username.to_owned())))
         .await
     {
         Ok(Some(user)) => match verify_encoded(&user.password, info.password.as_bytes()) {
@@ -50,9 +51,6 @@ pub async fn login(info: Json<LoginInfo>) -> HttpResponse {
             "Sorry No User is founded with username of: {}",
             info.username
         ))),
-        Err(e) => HttpResponse::InternalServerError().json(Resp::new(&format!(
-            "Sorry We are some problem in opening database!!: {:?}",
-            e
-        ))),
+        Err(_) => HttpResponse::InternalServerError().json(Resp::new("Sorry We are some problem in opening database!!")),
     }
 }

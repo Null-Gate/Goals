@@ -2,6 +2,7 @@ use actix_multipart::form::{tempfile::TempFile, text::Text, MultipartForm};
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use serde_json::to_string;
 use std::collections::{HashMap, HashSet};
 use surrealdb::{
     engine::local::{Db, File},
@@ -54,13 +55,13 @@ pub struct SignUpInfo {
 
 #[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Debug)]
 pub enum Time {
-    TimeStamp((u8, u8)),
+    TimeStamp(u8, u8),
     Other(String),
 }
 
 impl Default for Time {
     fn default() -> Self {
-        Self::TimeStamp((0, 0))
+        Self::TimeStamp(0, 0)
     }
 }
 
@@ -80,11 +81,12 @@ pub enum Date {
 pub struct Post {
     pub title: String,
     pub details: String,
-    pub tables: HashMap<Date, HashMap<String, Time>>,
+    pub tables: HashMap<Date, HashMap<String, String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DBPost {
+    pub owner: RecordId,
     pub post_id: Id,
     pub post: Post,
     pub votes: isize,
@@ -94,11 +96,8 @@ pub struct DBPost {
 
 impl Default for DBPost {
     fn default() -> Self {
-        let mut tables = HashMap::new();
-        let mut nst_hm = HashMap::new();
-        nst_hm.insert(String::default(), Time::default());
-        tables.insert(Date::default(), nst_hm);
         Self {
+            owner: RecordId::from(("user", Id::rand())),
             post_id: Id::rand(),
             post: Post::default(),
             votes: 0,
@@ -112,7 +111,10 @@ impl Default for Post {
     fn default() -> Self {
         let mut tables = HashMap::new();
         let mut nst_hm = HashMap::new();
-        nst_hm.insert(String::default(), Time::default());
+        let time = to_string(&Time::Other("When I'm Boring".to_string())).unwrap();
+        let time2 = to_string(&Time::TimeStamp(8, 0)).unwrap();
+        nst_hm.insert(time2, String::default());
+        nst_hm.insert(time, String::default());
         tables.insert(Date::default(), nst_hm);
         Self {
             title: String::new(),
@@ -126,8 +128,7 @@ impl Default for Post {
 pub struct UserInfo {
     pub username: String,
     pub fullname: String,
-    pub password: String,
-    pub up_posts: Vec<Post>,
+    pub up_posts: Vec<DBPost>,
     pub pic_path: String,
 }
 

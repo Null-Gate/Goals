@@ -26,19 +26,20 @@ pub async fn upload_post(token: Path<String>, post: Json<Post>) -> HttpResponse 
 
     match decode::<Claims>(&token, &DecodingKey::from_secret(get_jwt_secret().as_bytes()), &Validation::new(Algorithm::HS256)) {
         Ok(claims) => {
-            match db.select::<Option<DBUserInfo>>(("user", &claims.claims.username)).await {
-                Ok(Some(_)) => {
+            match db.select::<Option<DBUserInfo>>(("user", Id::String(claims.claims.username.to_owned()))).await {
+                Ok(Some(user)) => {
                     let post_id = Id::rand();
 
                     let post = DBPost {
                         post_id: post_id.clone(),
                         post: post.into_inner(),
+                        owner: RecordId::from(("user", Id::String(user.username))),
                         ..Default::default()
                     };
 
                     match db.create::<Option<DBPost>>(("post", post_id.clone())).content(post).await {
                         Ok(Some(s_post)) => {
-                            match db.update::<Option<DBUserInfo>>(("user", &claims.claims.username)).patch(PatchOp::add("/up_posts", &RecordId::from(("post", post_id)))).await {
+                            match db.update::<Option<DBUserInfo>>(("user", Id::String(claims.claims.username.to_owned()))).patch(PatchOp::add("/up_posts", &RecordId::from(("post", post_id)))).await {
                                 Ok(Some(_)) => {
                                     HttpResponse::Ok().json(s_post)
                                 },
